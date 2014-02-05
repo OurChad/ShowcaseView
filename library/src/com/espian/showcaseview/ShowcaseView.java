@@ -75,10 +75,12 @@ public class ShowcaseView extends RelativeLayout
     private int mBackgroundColor;
     private View mHandy;
     private final Button mEndButton;
+    private final Button mQuitButton;
     OnShowcaseEventListener mEventListener = OnShowcaseEventListener.NONE;
     private boolean mAlteredText = false;
 
     private final String buttonText;
+    private final String exitButtonText;
 
     private float scaleMultiplier = 1f;
     private TextDrawer mTextDrawer;
@@ -117,11 +119,14 @@ public class ShowcaseView extends RelativeLayout
                         R.style.TextAppearance_ShowcaseView_Detail);
 
         buttonText = styled.getString(R.styleable.ShowcaseView_sv_buttonText);
+        exitButtonText = "Quit Tutorial";
         styled.recycle();
 
         metricScale = getContext().getResources().getDisplayMetrics().density;
         mEndButton = (Button) LayoutInflater.from(context).inflate(R.layout.showcase_button, null);
-
+        mEndButton.setTag("OK");
+        mQuitButton = (Button) LayoutInflater.from(context).inflate(R.layout.close_button, null);
+        mQuitButton.setTag("CLOSE");
         mShowcaseDrawer = new ClingDrawerImpl(getResources(), showcaseColor);
 
         // TODO: This isn't ideal, ClingDrawer and Calculator interfaces should be separate
@@ -168,6 +173,18 @@ public class ShowcaseView extends RelativeLayout
                 mEndButton.setOnClickListener(this);
             }
             addView(mEndButton);
+            RelativeLayout.LayoutParams closeLps = getConfigOptions().buttonLayoutParams;
+            if (closeLps == null) {            	
+            	closeLps = (LayoutParams) generateDefaultLayoutParams();
+            	closeLps.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            	closeLps.addRule(RelativeLayout.ALIGN_PARENT_LEFT);            	
+                int margin = ((Number) (metricScale * 15)).intValue();
+                closeLps.setMargins(margin, margin, margin, margin);                  
+            }
+            mQuitButton.setText(getResources().getString(R.string.close));
+            mQuitButton.setLayoutParams(closeLps);
+            mQuitButton.setOnClickListener(this);
+            addView(mQuitButton);
         }
 
     }
@@ -462,17 +479,27 @@ public class ShowcaseView extends RelativeLayout
     @Override
     public void onClick(View view) {
         // If the type is set to one-shot, store that it has shot
-        if (mOptions.shotType == TYPE_ONE_SHOT) {
-            SharedPreferences internal = getContext()
-                    .getSharedPreferences(PREFS_SHOWCASE_INTERNAL, Context.MODE_PRIVATE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-                internal.edit().putBoolean("hasShot" + getConfigOptions().showcaseId, true).apply();
-            } else {
-                internal.edit().putBoolean("hasShot" + getConfigOptions().showcaseId, true)
-                        .commit();
-            }
-        }
-        hide();
+    	String tag = (String) view.getTag();
+    	if(tag.equals("OK")){
+	        if (mOptions.shotType == TYPE_ONE_SHOT) {
+	            SharedPreferences internal = getContext()
+	                    .getSharedPreferences(PREFS_SHOWCASE_INTERNAL, Context.MODE_PRIVATE);
+	            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+	                internal.edit().putBoolean("hasShot" + getConfigOptions().showcaseId, true).apply();
+	            } else {
+	                internal.edit().putBoolean("hasShot" + getConfigOptions().showcaseId, true)
+	                        .commit();
+	            }
+	        }
+	        hide();
+    	} else if(tag.equals("CLOSE")){
+    		close();
+    	}
+    }
+    
+    public void close() {    	
+        setVisibility(View.GONE);
+        mEventListener.onShowcaseViewClosed(this);
     }
 
     public void hide() {

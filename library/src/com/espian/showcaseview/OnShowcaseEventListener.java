@@ -10,6 +10,8 @@ public interface OnShowcaseEventListener {
     public void onShowcaseViewDidHide(ShowcaseView showcaseView);
 
     public void onShowcaseViewShow(ShowcaseView showcaseView);
+    
+    public void onShowcaseViewClosed(ShowcaseView showcaseView);
 
     /**
      * Empty implementation of OnShowcaseViewEventListener such that null
@@ -29,6 +31,11 @@ public interface OnShowcaseEventListener {
         @Override
         public void onShowcaseViewShow(ShowcaseView showcaseView) {
 
+        }
+        
+        @Override
+        public void onShowcaseViewClosed(ShowcaseView showcaseView){
+        	
         }
     };
 
